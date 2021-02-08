@@ -27,12 +27,12 @@ p_0 = np.zeros(d+1)
 p_0[1] = 1.0
 
 # Set up probability of completion for each number of attempts
-p_i = np.zeros(len(r_v))
+p = np.zeros(len(r_v))
 
 # For each number of attempts
-for i in range(len(r_v)):
+for n in range(len(r_v)):
     # Set up dummy variable for current number of attempts
-    r = r_v[i]
+    r = r_v[n]
     
     # Use Markov chain logic to get probability distribution of n unique items 
     # given r tries (p_n = M^r * p_0)
@@ -42,29 +42,31 @@ for i in range(len(r_v)):
     # r tries
     
     # First set up the list of states (# unique items)
-    n = list(range(d+1))
+    k = list(range(d+1))
     
     # Modify this with the number of unique items after processing duplicates
-    for j in range(len(n)):
+    for j in range(len(k)):
         # Get the most unique items you could exchange with r-n duplicates at 
         # an exhange rate of one unique item per c duplicates
-        n[j] = n[j] + math.floor((r-n[j])/c)
+        k[j] = k[j] + math.floor((r-k[j])/c)
     
     # Now get the probability of completion (achieving d items) by subtracting
     # the summed probability of failed states (n < d) 
-    p_i[i] = 1.0
+    p[n] = 1.0
     for j in range(len(p_n)):
-        if n[j] < d:
-           p_i[i] = p_i[i] - p_n[j]
+        if k[j] < d:
+           p[n] = p[n] - p_n[j]
 
 # Plot #######################################################################
-plt.bar(r_v,p_i)
+plt.bar(r_v,p)
 # Set upper and lower limits @ points where probability = 0.001 and 0.999
-xll = r_v[np.argwhere(p_i > 1e-3)[0]]- 0.5
-xul = r_v[np.argwhere(p_i < 1-1e-3)[-1]] + 0.5
+xll = r_v[np.argwhere(p > 1e-3)[0]] - 0.5
+xul = r_v[np.argwhere(p < 1-1e-3)[-1]] + 0.5
 axes = plt.gca()
 axes.set_xlim([xll,xul])
-plt.xlabel('r  (Number of total items drawn)')
-plt.ylabel('p(d|r)  (Probability of d items given r draws)')
+plt.xlabel('n  (Number of draws)')
+plt.ylabel('p(d|r)  (Probability of d unique items given n draws)')
 plt.title('d (Number of items to get) = %d, c (Exchange rate) = %d:1' %(d,c))
+plt.show()
 
+plt.savefig('figure.png')
